@@ -11,12 +11,12 @@
     />
   </head>
   <body>
-    <div class="container">
+    <div class="container-fluid">
       <!-- Add Jumbotron to Header -->
       <div class="jumbotron text-center">
         <h1>Mission to Mars</h1>
         <!-- Add a button to activate scraping script -->
-        <p><a class="btn btn-primary btn-lg" href="/scrape" role="button">Scrape New Data</a></p>
+        <p><a class="btn btn-info btn-lg" href="/scrape" role="button">Scrape New Data</a></p>
       </div>
       <!-- Add section for Mars News -->
       <div class="row" id="mars-news">
@@ -42,12 +42,27 @@
         </div>
         <div class="col-md-4">
           <!-- Mars Facts -->
-          <div class="row" id="mars-facts">
+          <div class="row text-danger" id="mars-facts">
             <h4>Mars Facts</h4>
             {{ mars.facts | safe }}
           </div>
         </div>
       </div>
+      <!--New section begin for images challenge-->
+      <div class="row" id="hemisphere_image_urls">
+          <h2>Mars Hemispheres</h2>
+          {% for hemisphere in mars.hemisphere_image_urls %}
+         <!-- <div class="col-md-6"> -->
+         <div class="col-md-3"> 
+          <img
+            src="{{hemisphere.img_url }}"
+            class="img-thumbnail"
+            alt="{{hemisphere.title}}"
+          ><strong>{{hemisphere.title }}</strong></img>
+          </div>
+          {% endfor %}
+       </div>
+      <!--New section end for images challenge-->
     </div>
   </body>
 </html>
