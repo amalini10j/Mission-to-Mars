@@ -19,7 +19,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemisphere_image_urls": hemisphere_image_urls(browser, executable_path)
     }
 
     # Stop webdriver and return data
@@ -91,6 +92,64 @@ def mars_facts():
     df.set_index('description', inplace=True)
     # Pandas also has a way to easily convert our DataFrame back into HTML-ready code using the .to_html() function
     return df.to_html()
+
+def hemisphere_image_urls(browser, executable_path):
+    # create lists to hold the image urls and titles
+    hemisphere_image_urls = []
+    hemisphere_image_urls_exec = []
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+    html = browser.html
+    img_soup = soup(html, 'html.parser')
+    try:
+        # find all div elements with class item and then iterate through the same
+        hemisphere_image_urls_exec = img_soup.find_all("div", class_="item")
+
+        for soup_item in hemisphere_image_urls_exec:
+            #dictionary to hold image url and title
+            hemispheres = {}
+            
+            # find a tags with the class as itemLink product-item within the div tag 
+            image_url = soup_item.find("a", class_="itemLink product-item")
+            
+            # find the href from the a tag to get the image url
+            img_url_rel = image_url['href']
+            full_url = f'https://marshemispheres.com/{img_url_rel}'
+            
+            # get image title description
+            title_url = soup_item.find('h3').text
+            
+            # instamtiate a new browser object to navigate to the full image page for each image
+            browser_new = Browser('chrome', **executable_path, headless=True)
+            browser_new.visit(full_url)
+            html_drilldown = browser_new.html
+            img_soup_drilldown = soup(html_drilldown, 'html.parser')
+            
+            # find the download tg which has the full image url
+            download_tag = img_soup_drilldown.find("div", class_="downloads")
+            a_tag = download_tag.find("a", attrs={"target" : "_blank"})
+            # get the full image url. Gives just the relative path here
+            full_res_img = a_tag['href']
+            # construct the full image url and store in the dictionary
+            hemispheres['img_url'] = f'https://marshemispheres.com/{full_res_img}'
+            # store the image title in the dictionary
+            hemispheres['title'] = title_url
+            #print(hemispheres) # for testing
+            
+            # copy elements into a new dictionary so that it does not get overwritten in the next iteration
+            hemispheres_copy = hemispheres.copy()
+            #append the dictionary items to the list to get a list of image urls and titles
+            hemisphere_image_urls.append(hemispheres_copy)
+            browser_new.back()
+            # quit the new automated browsers created to navigate to image pages
+            browser_new.quit() 
+    except BaseException:
+      return None
+    # return the list
+    return hemisphere_image_urls
+
 
 if __name__ == "__main__":
 
